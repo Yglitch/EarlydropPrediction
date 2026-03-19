@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student Dashboard</title>
+
+<link rel="stylesheet" href="/static/style.css">
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* quick styling for charts + modal */
+.charts {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.chart-box {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 50%;
+}
+
+.modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+}
+
+.modal-content {
+    background: white;
+    margin: 10% auto;
+    padding: 20px;
+    width: 400px;
+    border-radius: 10px;
+    text-align: center;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>🎓 Dropout AI</h2>
+        <ul>
+            <li class="active" onclick="loadStudents()">Dashboard</li>
+            <li onclick="loadStudents()">Fetch Data</li>
+            <li onclick="goToAdd()">Add Student</li>
+            <li onclick="goToAbout()">About</li>
+        </ul>
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+
+        <!-- Topbar -->
+        <div class="topbar">
+            <h1>Student Dropout Prediction Dashboard</h1>
+            <div class="user">Admin</div>
+        </div>
+
+        <!-- Cards -->
+        <div class="cards">
+            <div class="card blue">
+                <h3>Total Students</h3>
+                <p id="total">0</p>
+            </div>
+
+            <div class="card red">
+                <h3>High Risk</h3>
+                <p id="high">0</p>
+            </div>
+
+            <div class="card yellow">
+                <h3>Medium Risk</h3>
+                <p id="medium">0</p>
+            </div>
+
+            <div class="card green">
+                <h3>Low Risk</h3>
+                <p id="low">0</p>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts">
+            <div class="chart-box">
+                <h3>Risk Distribution</h3>
+                <canvas id="riskChart"></canvas>
+            </div>
+
+            <div class="chart-box">
+                <h3>Attendance vs Marks</h3>
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-section">
+            <h2>Student Risk Table</h2>
+
+            <table id="studentTable">
+                <tr>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Attendance</th>
+                    <th>Marks</th>
+                    <th>Risk</th>
+                </tr>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="studentModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <h3 id="studentName"></h3>
+        <canvas id="studentChart"></canvas>
+        <br><br>
+        <button onclick="closeModal()">Close</button>
+    </div>
+</div>
+
+<script>
+
+const API = "http://127.0.0.1:8000";
+
+let riskChart, performanceChart, studentChart;
+
+// ================= LOAD STUDENTS =================
+async function loadStudents() {
+    try {
+        const res = await fetch(`${API}/students`);
+
+        if (!res.ok) throw new Error("API failed");
+
+        const data = await res.json();
+
+        const table = document.getElementById("studentTable");
+
+        table.innerHTML = `
+            <tr>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Attendance</th>
+                <th>Marks</th>
+                <th>Risk</th>
+            </tr>
+        `;
+
+        let high = 0, medium = 0, low = 0;
+
+        let names = [];
+        let attendanceArr = [];
+        let marksArr = [];
+
+        data.forEach(s => {
+
+            // ensure backend correctness
+            let risk = s.risk;
+
+            if (!risk) {
+                console.warn("Missing risk for:", s);
+                risk = "Low";
+            }
+
+            if (risk === "High") high++;
+            else if (risk === "Medium") medium++;
+            else low++;
+
+            names.push(s.name);
+            attendanceArr.push(s.attendance || 0);
+            marksArr.push(s.marks || 0);
+
+            let row = table.insertRow();
+
+            row.innerHTML = `
+                <td onclick="showStudent('${s.name}', ${s.attendance || 0}, ${s.marks || 0})"
+                    style="cursor:pointer;color:#3b82f6;">
+                    ${s.name}
+                </td>
+                <td>${s.age}</td>
+                <td>${s.attendance || 0}%</td>
+                <td>${s.marks || 0}</td>
+                <td class="${risk.toLowerCase()}">${risk}</td>
+            `;
+        });
+
+        // update cards
+        document.getElementById("total").innerText = data.length;
+        document.getElementById("high").innerText = high;
+        document.getElementById("medium").innerText = medium;
+        document.getElementById("low").innerText = low;
+
+        renderRiskChart(high, medium, low);
+        renderPerformanceChart(names, attendanceArr, marksArr);
+
+    } catch (err) {
+        console.error(err);
+        alert("❌ Failed to connect to backend.\nCheck FastAPI server.");
+    }
+}
+
+// ================= CHARTS =================
+
+// Pie Chart
+function renderRiskChart(high, medium, low) {
+    if (riskChart) riskChart.destroy();
+
+    const ctx = document.getElementById("riskChart");
+
+    riskChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['High', 'Medium', 'Low'],
+            datasets: [{
+                data: [high, medium, low]
+            }]
+        }
+    });
+}
+
+// Bar Chart
+function renderPerformanceChart(names, attendance, marks) {
+    if (performanceChart) performanceChart.destroy();
+
+    const ctx = document.getElementById("performanceChart");
+
+    performanceChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: names,
+            datasets: [
+                {
+                    label: 'Attendance',
+                    data: attendance
+                },
+                {
+                    label: 'Marks',
+                    data: marks
+                }
+            ]
+        }
+    });
+}
+
+// ================= STUDENT MODAL =================
+function showStudent(name, attendance, marks) {
+
+    document.getElementById("studentModal").style.display = "flex";
+    document.getElementById("studentName").innerText = name;
+
+    const ctx = document.getElementById("studentChart");
+
+    if (studentChart) studentChart.destroy();
+
+    studentChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Attendance', 'Marks'],
+            datasets: [{
+                data: [attendance, marks]
+            }]
+        }
+    });
+}
+
+function closeModal() {
+    document.getElementById("studentModal").style.display = "none";
+}
+
+// ================= NAVIGATION =================
+function goToAdd() {
+    window.location.href = "add_student.html";
+}
+
+function goToAbout() {
+    window.location.href = "about.html";
+}
+
+// ================= AUTO LOAD =================
+window.onload = loadStudents;
+
+</script>
+
+</body>
+</html>

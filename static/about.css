@@ -1,0 +1,91 @@
+/* ================= CONTAINER ================= */
+.about-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+/* ================= HEADER ================= */
+.about-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.about-header h1 {
+    font-size: 28px;
+    color: #1e293b;
+}
+
+.about-header p {
+    color: #64748b;
+}
+
+/* ================= SECTION ================= */
+.section {
+    background: white;
+    padding: 25px;
+    margin-bottom: 20px;
+    border-radius: 14px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: 0.3s;
+}
+
+.section:hover {
+    transform: translateY(-3px);
+}
+
+/* section headings */
+.section h2 {
+    margin-bottom: 10px;
+    color: #3b82f6;
+}
+
+/* text */
+.section p {
+    color: #444;
+    line-height: 1.6;
+}
+
+/* ================= CARDS ================= */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.card {
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.card:hover {
+    background: #e0f2fe;
+}
+
+/* ================= BUTTON ================= */
+.back-btn {
+    display: block;
+    margin: 30px auto;
+    padding: 10px 20px;
+    border: none;
+    background: #3b82f6;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.back-btn:hover {
+    background: #2563eb;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+    .about-container {
+        padding: 15px;
+    }
+}
