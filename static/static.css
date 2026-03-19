@@ -1,0 +1,106 @@
+:root {
+    --primary: #6366f1;
+    --bg: #f1f5f9;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --white: #ffffff;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+body { background-color: var(--bg); color: var(--text); padding: 2rem; }
+
+.directory-container { max-width: 1400px; margin: 0 auto; }
+
+/* Header & Actions */
+.directory-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: flex-end; 
+    margin-bottom: 2rem; 
+}
+
+.back-btn { 
+    text-decoration: none; 
+    color: var(--primary); 
+    font-weight: 600; 
+    font-size: 0.9rem; 
+    display: block; 
+    margin-bottom: 10px; 
+}
+
+.directory-header h1 { font-size: 1.8rem; letter-spacing: -0.5px; }
+.directory-header p { color: var(--text-muted); font-size: 0.95rem; }
+
+.header-actions { display: flex; gap: 12px; align-items: center; }
+
+input, select {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 0.9rem;
+    outline: none;
+}
+
+input:focus { border-color: var(--primary); }
+
+.export-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Table Card */
+.table-card {
+    background: var(--white);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.table-responsive { overflow-x: auto; max-height: 75vh; }
+
+table { width: 100%; border-collapse: collapse; text-align: left; }
+
+th {
+    background: #f8fafc;
+    padding: 14px 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+td { padding: 16px 20px; font-size: 0.9rem; border-bottom: 1px solid #f1f5f9; }
+
+tr:hover td { background-color: #f8fafc; cursor: default; }
+
+/* Status Badges */
+.badge {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.High { background: #fee2e2; color: #dc2626; }
+.Medium { background: #fef3c7; color: #d97706; }
+.Low { background: #dcfce7; color: #16a34a; }
+
+/* Print Logic */
+@media print {
+    .back-btn, .header-actions { display: none; }
+    body { padding: 0; background: white; }
+    .table-card { box-shadow: none; border: none; }
+    .table-responsive { max-height: none; }
+}

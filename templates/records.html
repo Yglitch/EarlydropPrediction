@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Directory | Dropout AI</title>
+    <link rel="stylesheet" href="/static/static.css ">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="directory-container">
+    <header class="directory-header">
+        <div class="header-left">
+            <a href="index.html" class="back-btn">← Back to Dashboard</a>
+            <h1>Master Student Directory</h1>
+            <p id="record-count">Showing 00 Total Records</p>
+        </div>
+        
+        <div class="header-actions">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search by name or ID..." onkeyup="filterData()">
+            </div>
+            <select id="statusFilter" onchange="filterData()">
+                <option value="all">All Statuses</option>
+                <option value="High">High Risk</option>
+                <option value="Medium">Medium Risk</option>
+                <option value="Low">Low Risk/Excellent</option>
+            </select>
+            <button class="export-btn" onclick="window.print()">Print Report</button>
+        </div>
+    </header>
+
+    <div class="table-card">
+        <div class="table-responsive">
+            <table id="masterTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Student Name</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Attendance</th>
+                        <th>Marks</th>
+                        <th>Income (₹)</th>
+                        <th>Risk Status</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody id="fullTableBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>const fullCSVData = `name,student_id,age,gender,attendance,marks,assignment_submission,income,remarks
+Aarav Sharma,01,15,male,85,78,90,300000,Good performance
+Riya Verma,02,16,female,60,55,65,150000,At risk due to low attendance
+Karan Singh,03,17,male,92,88,95,500000,Excellent student
+Pooja Kumari,04,15,female,50,48,55,120000,High dropout risk
+Rahul Yadav,05,16,male,70,65,75,200000,Moderate performance
+Ananya Gupta,06,14,female,40,30,45,100000,High dropout risk
+Siddharth Mehta,07,18,male,95,90,98,600000,Outstanding student
+Neha Patel,08,15,female,55,50,60,130000,At risk due to low marks
+Vikram Rao,09,16,male,80,75,85,250000,Good performance
+Sneha Joshi,10,14,female,45,35,50,110000,High risk
+Sneha Das,11,16,female,90,85,88,450000,Top performer
+Anjali Mehta,12,15,female,78,72,80,350000,Stable student
+Sahil Khan,13,16,male,40,45,50,100000,Very high dropout risk
+Rohit Verma,14,17,male,85,80,90,400000,Good performance
+Aisha Singh,15,15,female,60,55,65,150000,At risk due to low attendance
+Aditya Kumar,16,16,male,70,65,75,200000,Moderate performance
+Maya Patel,17,14,female,50,40,55,120000,High dropout risk
+Arjun Sharma,18,18,male,95,90,98,600000,Outstanding student
+Sanya Gupta,19,15,female,55,50,60,130000,At risk due to low marks
+Rohan Rao,20,16,male,80,75,85,250000,Good performance
+Sahil Das,21,14,male,45,35,50,110000,High risk
+Yash Verma,22,16,male,90,85,88,450000,Top performer
+Yuvraj Singh,23,15,male,78,72,80,350000,Stable student
+Aarav Khan,24,16,male,40,45,50,100000,Very high dropout risk
+Rohit Mehta,25,17,male,85,80,90,400000,Good performance
+Aisha Patel,26,15,female,60,55,65,150000,At risk due to low attendance
+Aditya Rao,27,16,male,70,65,75,200000,Moderate performance
+Maya Verma,28,14,female,50,40,55,120000,High dropout risk
+Arjun Singh,29,18,male,95,90,98,600000,Outstanding student
+Sanya Mehta,30,15,female,55,50,60,130000,At risk due to low marks
+Rohan Sharma,31,16,male,80,75,85,250000,Good performance
+Sahil Verma,32,14,male,45,35,50,110000,High risk
+Yash Das,33,16,male,90,85,88,450000,Top performer
+Yuvraj Rao,34,15,male,78,72,80,350000,Stable student
+Aarav Verma,35,16,male,40,45,50,100000,Very high dropout risk
+Rohit Singh,36,17,male,85,80,90,400000,Good performance
+Aisha Mehta,37,15,male,60,55,65,150000,At risk  due to low attendance
+Aditya Patel,38,16,male,70,65,75,200000,Moderate performance
+Maya Rao,39,14,female,50,40,55,120000,High dropout risk
+Arjun Verma,40,18,male,95,90,98,600000,Outstanding student
+Sanya Singh,41,15,female,55,50,60,130000,At risk due to low marks
+Rohan Mehta,42,16,male,80,75,85,250000,Good performance
+Sahil Sharma,43,14,male,45,35,50,110000,High risk
+Yash Verma,44,16,male,90,85,88,450000,Top performer
+Tejpal Singh,45,15,male,78,72,80,350000,Stable student
+Aarav Kumar,46,16,male,40,45,50,100000,Very high dropout risk
+Mahipal rana,47,17,male,85,80,90,400000,Good performance
+Angelina kaur,48,15,female,60,55,65,150000,At risk due to low attendance
+Anirudh Rawat,49,16,male,70,65,75,200000,Moderate performance
+Maya Singh,50,14,female,50,40,55,120000,High dropout risk
+Arjun Mehta,51,18,male,95,90,98,600000,Outstanding student
+Sanya Rao,52,15,female,55,50,60,130000,At risk due to low marks
+Rohan Verma,53,16,male,80,75,85,250000,Good performance
+Adarsh gusain,54,14,male,45,35,50,110000,High risk
+Jaideep dhanai,55,15,male,78,72,80,350000,Stable student
+Ritik Verma,56,16,male,40,45,50,100000,Very high dropout risk
+Deepika gunsola,57,17,female,85,80,90,400000,Good performance
+Ananya Singh,58,15,female,60,55,65,150000,At risk due to low attendance
+Aditya Mehta,59,16,male,70,65,75,200000,Moderate performance
+Maya Rao,60,14,female,50,40,55,120000,High dropout
+Rohan negi,61,18,male,95,90,98,600000,Outstanding student
+Sanya Verma,62,15,female,55,50,60,130000,At risk due to low marks
+Rohan Sharma,63,16,male,80,75,85,250000,Good performance
+Sahil Verma,64,14,male,45,35,50,110000,High risk
+Gunjan Sharma,65,16,female,90,85,88,450000,Top performer
+Akhil rana,66,15,male,78,72,80,350000,Stable student
+Nikhil rana,67,16,male,40,45,50,100000,Very high dropout risk
+Rohit Mehta,68,17,male,85,80,90,400000,Good performance
+Rang Singh,69,15,male,60,55,65,150000,At risk due to low attendance
+Rohit Singh,70,18,male,90,85,90,500000,Excellent performance`;
+
+let allStudents = [];
+
+function parseData() {
+    const lines = fullCSVData.trim().split('\n');
+    allStudents = lines.slice(1).map(line => {
+        const v = line.split(',');
+        const att = parseInt(v[4]);
+        const marks = parseInt(v[5]);
+        
+        // Logical risk assessment
+        let status = "Low";
+        if (att < 50 || marks < 40) status = "High";
+        else if (att < 75 || marks < 60) status = "Medium";
+
+        return {
+            id: v[1],
+            name: v[0],
+            age: v[2],
+            gender: v[3],
+            attendance: att,
+            marks: marks,
+            income: v[7],
+            status: status,
+            remarks: v[8]
+        };
+    });
+    renderTable(allStudents);
+}
+
+function renderTable(data) {
+    const tbody = document.getElementById('fullTableBody');
+    document.getElementById('record-count').innerText = `Displaying ${data.length} Total Records`;
+    
+    tbody.innerHTML = data.map(s => `
+        <tr>
+            <td>#${s.id}</td>
+            <td style="font-weight:600">${s.name}</td>
+            <td>${s.age}</td>
+            <td style="text-transform: capitalize">${s.gender}</td>
+            <td>${s.attendance}%</td>
+            <td>${s.marks}</td>
+            <td>${parseInt(s.income).toLocaleString()}</td>
+            <td><span class="badge ${s.status}">${s.status}</span></td>
+            <td style="color: #64748b; font-style: italic">${s.remarks}</td>
+        </tr>
+    `).join('');
+}
+
+function filterData() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+
+    const filtered = allStudents.filter(s => {
+        const matchesSearch = s.name.toLowerCase().includes(searchTerm) || s.id.includes(searchTerm);
+        const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
+
+    renderTable(filtered);
+}
+
+window.onload = parseData;</script>
+</body>
+</html>

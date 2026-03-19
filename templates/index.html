@@ -1,297 +1,257 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Student Dashboard</title>
-
-<link rel="stylesheet" href="/static/style.css">
-
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-/* quick styling for charts + modal */
-.charts {
-    display: flex;
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.chart-box {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    width: 50%;
-}
-
-.modal {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6);
-}
-
-.modal-content {
-    background: white;
-    margin: 10% auto;
-    padding: 20px;
-    width: 400px;
-    border-radius: 10px;
-    text-align: center;
-}
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dropout AI | Admin Analytics</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
 
-<div class="dashboard">
-
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <h2>🎓 Dropout AI</h2>
-        <ul>
-            <li class="active" onclick="loadStudents()">Dashboard</li>
-            <li onclick="loadStudents()">Fetch Data</li>
-            <li onclick="goToAdd()">Add Student</li>
-            <li onclick="goToAbout()">About</li>
-        </ul>
-    </div>
-
-    <!-- Main -->
-    <div class="main">
-
-        <!-- Topbar -->
-        <div class="topbar">
-            <h1>Student Dropout Prediction Dashboard</h1>
-            <div class="user">Admin</div>
+<div class="app-container">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="logo-icon">AI</div>
+            <h2>Dropout AI</h2>
         </div>
+        <nav>
+            <ul>
+                <li class="active">Overview</li>
+                <a href="/templates/records.html"><li>Student Records</li></a>
+                <li>Interventions</li>
+                <li>Reports</li>
+            </ul>
+        </nav>
+    </aside>
 
-        <!-- Cards -->
-        <div class="cards">
-            <div class="card blue">
-                <h3>Total Students</h3>
-                <p id="total">0</p>
+    <main class="content">
+        <header class="main-header">
+            <div>
+                <h1>Institutional Dashboard</h1>
+                <p>Early Warning System & Risk Assessment</p>
+            </div>
+            <div class="user-profile">
+                <span>Administrator</span>
+                <img src="https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff" alt="avatar">
+            </div>
+        </header>
+
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <small>Total Enrollment</small>
+                <h2 id="total-count">0</h2>
+            </div>
+            <div class="kpi-card danger">
+                <small>Critical Risk</small>
+                <h2 id="high-count">0</h2>
+            </div>
+            <div class="kpi-card warning">
+                <small>Moderate Risk</small>
+                <h2 id="med-count">0</h2>
+            </div>
+            <div class="kpi-card success">
+                <small>On Track</small>
+                <h2 id="low-count">0</h2>
+            </div>
+        </section>
+
+        <div class="dashboard-layout">
+            <div class="analytics-col">
+                <div class="glass-card chart-main">
+                    <h3>Risk Distribution</h3>
+                    <div class="chart-height">
+                        <canvas id="riskPieChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="glass-card">
+                    <h3>Academic vs Attendance Correlation</h3>
+                    <div class="chart-height">
+                        <canvas id="scatterChart"></canvas>
+                    </div>
+                </div>
             </div>
 
-            <div class="card red">
-                <h3>High Risk</h3>
-                <p id="high">0</p>
-            </div>
+            <div class="data-col">
+                <div class="glass-card intervention-panel">
+                    <h3>⚠️ Priority Interventions (Top 3 At-Risk)</h3>
+                    <div id="intervention-list">
+                        </div>
+                </div>
 
-            <div class="card yellow">
-                <h3>Medium Risk</h3>
-                <p id="medium">0</p>
-            </div>
-
-            <div class="card green">
-                <h3>Low Risk</h3>
-                <p id="low">0</p>
+                <div class="glass-card table-panel">
+                    <div class="table-header">
+                        <h3>Student Risk Registry</h3>
+                        <input type="text" id="studentSearch" placeholder="Search by name...">
+                    </div>
+                    <div class="scroll-area">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Attendance</th>
+                                    <th>Marks</th>
+                                    <th>Risk Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-rows">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <!-- Charts -->
-        <div class="charts">
-            <div class="chart-box">
-                <h3>Risk Distribution</h3>
-                <canvas id="riskChart"></canvas>
-            </div>
-
-            <div class="chart-box">
-                <h3>Attendance vs Marks</h3>
-                <canvas id="performanceChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Table -->
-        <div class="table-section">
-            <h2>Student Risk Table</h2>
-
-            <table id="studentTable">
-                <tr>
-                    <th>Name</th>
-                    <th>Age</th>
-                    <th>Attendance</th>
-                    <th>Marks</th>
-                    <th>Risk</th>
-                </tr>
-            </table>
-        </div>
-
-    </div>
+    </main>
 </div>
 
-<!-- Modal -->
-<div id="studentModal" class="modal" style="display:none;">
-    <div class="modal-content">
-        <h3 id="studentName"></h3>
-        <canvas id="studentChart"></canvas>
-        <br><br>
-        <button onclick="closeModal()">Close</button>
-    </div>
-</div>
+<script >
+    // Parsed CSV Data from User
+const rawData = `name,student_id,age,gender,attendance,marks,assignment_submission,income,remarks
+Aarav Sharma,01,15,male,85,78,90,300000,Good performance
+Riya Verma,02,16,female,60,55,65,150000,At risk due to low attendance
+Karan Singh,03,17,male,92,88,95,500000,Excellent student
+Pooja Kumari,04,15,female,50,48,55,120000,High dropout risk
+Ananya Gupta,06,14,female,40,30,45,100000,High dropout risk
+Siddharth Mehta,07,18,male,95,90,98,600000,Outstanding student
+Neha Patel,08,15,female,55,50,60,130000,At risk due to low marks
+Sneha Joshi,10,14,female,45,35,50,110000,High risk
+Sahil Khan,13,16,male,40,45,50,100000,Very high dropout risk
+Maya Patel,17,14,female,50,40,55,120000,High dropout risk
+Aarav Khan,24,16,male,40,45,50,100000,Very high dropout risk
+Maya Verma,28,14,female,50,40,55,120000,High dropout risk
+Sahil Verma,32,14,male,45,35,50,110000,High risk
+Aarav Verma,35,16,male,40,45,50,100000,Very high dropout risk
+Maya Rao,39,14,female,50,40,55,120000,High dropout risk
+Sahil Sharma,43,14,male,45,35,50,110000,High risk
+Aarav Kumar,46,16,male,40,45,50,100000,Very high dropout risk
+Maya Singh,50,14,female,50,40,55,120000,High dropout risk
+Adarsh gusain,54,14,male,45,35,50,110000,High risk
+Ritik Verma,56,16,male,40,45,50,100000,Very high dropout risk
+Maya Rao,60,14,female,50,40,55,120000,High dropout
+Nikhil rana,67,16,male,40,45,50,100000,Very high dropout risk`;
 
-<script>
+function initDashboard() {
+    const lines = rawData.trim().split('\n');
+    const headers = lines[0].split(',');
+    const students = lines.slice(1).map(line => {
+        const val = line.split(',');
+        const attendance = parseInt(val[4]);
+        const marks = parseInt(val[5]);
+        
+        // Calculate Risk Logic
+        let risk = "Low";
+        let score = 0; // Higher = Higher Risk
+        if (attendance < 50) score += 50;
+        else if (attendance < 70) score += 20;
+        if (marks < 50) score += 40;
+        
+        if (score >= 70) risk = "High";
+        else if (score >= 20) risk = "Medium";
 
-const API = "http://127.0.0.1:8000";
+        return {
+            name: val[0],
+            attendance,
+            marks,
+            risk,
+            riskScore: score
+        };
+    });
 
-let riskChart, performanceChart, studentChart;
-
-// ================= LOAD STUDENTS =================
-async function loadStudents() {
-    try {
-        const res = await fetch(`${API}/students`);
-
-        if (!res.ok) throw new Error("API failed");
-
-        const data = await res.json();
-
-        const table = document.getElementById("studentTable");
-
-        table.innerHTML = `
-            <tr>
-                <th>Name</th>
-                <th>Age</th>
-                <th>Attendance</th>
-                <th>Marks</th>
-                <th>Risk</th>
-            </tr>
-        `;
-
-        let high = 0, medium = 0, low = 0;
-
-        let names = [];
-        let attendanceArr = [];
-        let marksArr = [];
-
-        data.forEach(s => {
-
-            // ensure backend correctness
-            let risk = s.risk;
-
-            if (!risk) {
-                console.warn("Missing risk for:", s);
-                risk = "Low";
-            }
-
-            if (risk === "High") high++;
-            else if (risk === "Medium") medium++;
-            else low++;
-
-            names.push(s.name);
-            attendanceArr.push(s.attendance || 0);
-            marksArr.push(s.marks || 0);
-
-            let row = table.insertRow();
-
-            row.innerHTML = `
-                <td onclick="showStudent('${s.name}', ${s.attendance || 0}, ${s.marks || 0})"
-                    style="cursor:pointer;color:#3b82f6;">
-                    ${s.name}
-                </td>
-                <td>${s.age}</td>
-                <td>${s.attendance || 0}%</td>
-                <td>${s.marks || 0}</td>
-                <td class="${risk.toLowerCase()}">${risk}</td>
-            `;
-        });
-
-        // update cards
-        document.getElementById("total").innerText = data.length;
-        document.getElementById("high").innerText = high;
-        document.getElementById("medium").innerText = medium;
-        document.getElementById("low").innerText = low;
-
-        renderRiskChart(high, medium, low);
-        renderPerformanceChart(names, attendanceArr, marksArr);
-
-    } catch (err) {
-        console.error(err);
-        alert("❌ Failed to connect to backend.\nCheck FastAPI server.");
-    }
+    renderStats(students);
+    renderTable(students);
+    renderCharts(students);
+    renderInterventions(students);
 }
 
-// ================= CHARTS =================
+function renderStats(students) {
+    const high = students.filter(s => s.risk === "High").length;
+    const med = students.filter(s => s.risk === "Medium").length;
+    const low = students.filter(s => s.risk === "Low").length;
 
-// Pie Chart
-function renderRiskChart(high, medium, low) {
-    if (riskChart) riskChart.destroy();
+    document.getElementById('total-count').innerText = students.length;
+    document.getElementById('high-count').innerText = high;
+    document.getElementById('med-count').innerText = med;
+    document.getElementById('low-count').innerText = low;
+}
 
-    const ctx = document.getElementById("riskChart");
+function renderTable(students) {
+    const tbody = document.getElementById('student-rows');
+    tbody.innerHTML = students.map(s => `
+        <tr>
+            <td style="font-weight:600">${s.name}</td>
+            <td>${s.attendance}%</td>
+            <td>${s.marks}</td>
+            <td><span class="risk-tag risk-${s.risk.toLowerCase()}">${s.risk}</span></td>
+        </tr>
+    `).join('');
+}
 
-    riskChart = new Chart(ctx, {
-        type: 'pie',
+function renderInterventions(students) {
+    // Sort by risk score descending
+    const topAtRisk = [...students].sort((a, b) => b.riskScore - a.riskScore).slice(0, 3);
+    const container = document.getElementById('intervention-list');
+
+    const actions = [
+        "Schedule Parent-Teacher Meeting",
+        "Enroll in After-school Tutoring",
+        "Financial Support Review Required"
+    ];
+
+    container.innerHTML = topAtRisk.map((s, i) => `
+        <div class="intervention-item">
+            <span class="int-name">${s.name}</span>
+            <span class="int-action">${actions[i]}</span>
+        </div>
+    `).join('');
+}
+
+function renderCharts(students) {
+    const high = students.filter(s => s.risk === "High").length;
+    const med = students.filter(s => s.risk === "Medium").length;
+    const low = students.filter(s => s.risk === "Low").length;
+
+    // Transitioning Pie (Doughnut) Chart
+    new Chart(document.getElementById('riskPieChart'), {
+        type: 'doughnut',
         data: {
-            labels: ['High', 'Medium', 'Low'],
+            labels: ['High Risk', 'Medium Risk', 'Low Risk'],
             datasets: [{
-                data: [high, medium, low]
+                data: [high, med, low],
+                backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
+                hoverOffset: 20,
+                borderWidth: 0
             }]
+        },
+        options: {
+            animation: { duration: 2000, easing: 'easeOutQuart' },
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
         }
     });
-}
 
-// Bar Chart
-function renderPerformanceChart(names, attendance, marks) {
-    if (performanceChart) performanceChart.destroy();
-
-    const ctx = document.getElementById("performanceChart");
-
-    performanceChart = new Chart(ctx, {
-        type: 'bar',
+    // Scatter Chart for Correlation
+    new Chart(document.getElementById('scatterChart'), {
+        type: 'scatter',
         data: {
-            labels: names,
-            datasets: [
-                {
-                    label: 'Attendance',
-                    data: attendance
-                },
-                {
-                    label: 'Marks',
-                    data: marks
-                }
-            ]
-        }
-    });
-}
-
-// ================= STUDENT MODAL =================
-function showStudent(name, attendance, marks) {
-
-    document.getElementById("studentModal").style.display = "flex";
-    document.getElementById("studentName").innerText = name;
-
-    const ctx = document.getElementById("studentChart");
-
-    if (studentChart) studentChart.destroy();
-
-    studentChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Attendance', 'Marks'],
             datasets: [{
-                data: [attendance, marks]
+                label: 'Student Metrics',
+                data: students.map(s => ({ x: s.attendance, y: s.marks })),
+                backgroundColor: '#6366f1'
             }]
+        },
+        options: {
+            scales: {
+                x: { title: { display: true, text: 'Attendance (%)' } },
+                y: { title: { display: true, text: 'Marks' } }
+            },
+            maintainAspectRatio: false
         }
     });
 }
 
-function closeModal() {
-    document.getElementById("studentModal").style.display = "none";
-}
-
-// ================= NAVIGATION =================
-function goToAdd() {
-    window.location.href = "add_student.html";
-}
-
-function goToAbout() {
-    window.location.href = "about.html";
-}
-
-// ================= AUTO LOAD =================
-window.onload = loadStudents;
-
+window.onload = initDashboard;
 </script>
-
 </body>
 </html>
